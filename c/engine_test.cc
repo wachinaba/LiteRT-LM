@@ -388,6 +388,44 @@ TEST(EngineCTest, CreateSessionConfigWithApplyPromptTemplate) {
   EXPECT_TRUE(config->config->GetApplyPromptTemplateInSession());
 }
 
+TEST(EngineCTest, CreateSessionConfigWithEnableSpeculativeDecoding) {
+  SessionConfigPtr config(litert_lm_session_config_create(),
+                          &litert_lm_session_config_delete);
+  ASSERT_NE(config, nullptr);
+
+  // By default, it is std::nullopt.
+  EXPECT_FALSE(config->config->GetEnableSpeculativeDecoding().has_value());
+
+  litert_lm_session_config_set_enable_speculative_decoding(config.get(), false);
+  EXPECT_THAT(config->config->GetEnableSpeculativeDecoding(),
+              testing::Optional(false));
+
+  litert_lm_session_config_set_enable_speculative_decoding(config.get(), true);
+  EXPECT_THAT(config->config->GetEnableSpeculativeDecoding(),
+              testing::Optional(true));
+}
+
+TEST(EngineCTest, CreateConversationConfigWithEnableSpeculativeDecoding) {
+  ConversationConfigPtr config(litert_lm_conversation_config_create(),
+                               &litert_lm_conversation_config_delete);
+  ASSERT_NE(config, nullptr);
+
+  // By default, session_config is not set.
+  EXPECT_FALSE(config->session_config.has_value());
+
+  litert_lm_conversation_config_set_enable_speculative_decoding(config.get(),
+                                                                false);
+  ASSERT_TRUE(config->session_config.has_value());
+  EXPECT_THAT(config->session_config->GetEnableSpeculativeDecoding(),
+              testing::Optional(false));
+
+  litert_lm_conversation_config_set_enable_speculative_decoding(config.get(),
+                                                                true);
+  ASSERT_TRUE(config->session_config.has_value());
+  EXPECT_THAT(config->session_config->GetEnableSpeculativeDecoding(),
+              testing::Optional(true));
+}
+
 TEST(EngineCTest, CreateConversationConfig) {
   // 1. Create an engine.
   const std::string task_path = GetTestdataPath(

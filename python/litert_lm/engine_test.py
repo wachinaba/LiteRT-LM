@@ -523,6 +523,32 @@ class EngineTest(LiteRtLmTestBase):
     ):
       self.assertIsNotNone(conversation)
 
+  def test_create_conversation_with_enable_speculative_decoding(self):
+    with self._create_engine() as engine:
+      # Disabling speculative decoding on an engine where it is disabled
+      # succeeds.
+      with engine.create_conversation(
+          enable_speculative_decoding=False
+      ) as conversation:
+        self.assertIsNotNone(conversation)
+
+      # Enabling speculative decoding on an engine where it is disabled
+      # raises RuntimeError.
+      with self.assertRaises(RuntimeError):
+        engine.create_conversation(enable_speculative_decoding=True)
+
+  def test_create_session_with_enable_speculative_decoding(self):
+    with self._create_engine() as engine:
+      # Disabling speculative decoding on an engine where it is disabled
+      # succeeds.
+      with engine.create_session(enable_speculative_decoding=False) as session:
+        self.assertIsNotNone(session)
+
+      # Enabling speculative decoding on an engine where it is disabled
+      # raises RuntimeError.
+      with self.assertRaises(RuntimeError):
+        engine.create_session(enable_speculative_decoding=True)
+
   def test_create_conversation_with_max_output_tokens_async(self):
     with (
         self._create_engine() as engine,

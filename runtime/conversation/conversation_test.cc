@@ -376,6 +376,26 @@ TEST(ConversationConfigTest, OverwritePromptTemplate) {
             "overwrite template");
 }
 
+TEST(ConversationConfigTest, SetEnableSpeculativeDecoding) {
+  ASSERT_OK_AND_ASSIGN(auto model_assets,
+                       ModelAssets::Create(GetTestdataPath(kTestLlmPath)));
+  ASSERT_OK_AND_ASSIGN(auto engine_settings, EngineSettings::CreateDefault(
+                                                 model_assets, Backend::CPU));
+  engine_settings.GetMutableMainExecutorSettings().SetCacheDir(":nocache");
+  engine_settings.GetMutableMainExecutorSettings().SetMaxNumTokens(10);
+
+  ASSERT_OK_AND_ASSIGN(auto engine,
+                       EngineFactory::CreateDefault(engine_settings));
+  ASSERT_OK_AND_ASSIGN(
+      auto config,
+      ConversationConfig::Builder().SetEnableSpeculativeDecoding(false).Build(
+          *engine));
+
+  EXPECT_THAT(config.GetEnableSpeculativeDecoding(), testing::Optional(false));
+  EXPECT_THAT(config.GetSessionConfig().GetEnableSpeculativeDecoding(),
+              testing::Optional(false));
+}
+
 struct ConversationTestParams {
   bool enable_constrained_decoding;
   bool prefill_preface_on_init;

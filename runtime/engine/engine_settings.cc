@@ -691,6 +691,22 @@ absl::Status SessionConfig::MaybeUpdateAndValidate(
     }
   }
 
+  const auto& advanced_settings =
+      engine_settings.GetMainExecutorSettings().GetAdvancedSettings();
+  bool engine_enable_speculative_decoding =
+      advanced_settings.has_value() &&
+      advanced_settings->enable_speculative_decoding;
+
+  if (enable_speculative_decoding_.has_value()) {
+    if (*enable_speculative_decoding_ && !engine_enable_speculative_decoding) {
+      return absl::InvalidArgumentError(
+          "Speculative decoding cannot be enabled for a session when it is "
+          "disabled in EngineSettings.");
+    }
+  } else {
+    enable_speculative_decoding_ = engine_enable_speculative_decoding;
+  }
+
   ABSL_VLOG(5) << "The validated session config: " << *this;
   return absl::OkStatus();
 }
@@ -798,6 +814,11 @@ std::ostream& operator<<(std::ostream& os, const SessionConfig& config) {
      << std::endl;
   os << "  ScopedAudioLoraFile: "
      << (config.GetAudioScopedLoraFile() != nullptr ? "Present" : "Not present")
+     << std::endl;
+  os << "  EnableSpeculativeDecoding: "
+     << (config.GetEnableSpeculativeDecoding().has_value()
+             ? (*config.GetEnableSpeculativeDecoding() ? "true" : "false")
+             : "Unspecified")
      << std::endl;
   os << "  AudioEmbeddingsCallback: "
      << (config.GetAudioEmbeddingsCallback() != nullptr ? "Present"

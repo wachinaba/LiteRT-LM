@@ -157,6 +157,17 @@ void litert_lm_conversation_config_set_session_config(
   }
 }
 
+void litert_lm_conversation_config_set_enable_speculative_decoding(
+    LiteRtLmConversationConfig* config, bool enable_speculative_decoding) {
+  if (config) {
+    if (!config->session_config) {
+      config->session_config = SessionConfig::CreateDefault();
+    }
+    config->session_config->SetEnableSpeculativeDecoding(
+        enable_speculative_decoding);
+  }
+}
+
 void litert_lm_conversation_config_set_system_message(
     LiteRtLmConversationConfig* config, const char* system_message_json) {
   if (config && system_message_json) {

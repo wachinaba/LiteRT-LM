@@ -109,6 +109,7 @@ internal object LiteRtLmJni {
     samplerConfig: SamplerConfig?,
     loraPath: String?,
     audioLoraPath: String?,
+    enableSpeculativeDecoding: Boolean?,
   ): Long
 
   /**
@@ -229,6 +230,7 @@ internal object LiteRtLmJni {
     maxOutputToken: Int,
     thinkingConfig: ThinkingConfig?,
     enableResponseFormat: Boolean,
+    enableSpeculativeDecoding: Boolean?,
   ): Long
 
   /**

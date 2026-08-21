@@ -186,6 +186,7 @@ public struct ConversationConfig {
   public let automaticToolCalling: Bool
   public let enableResponseFormat: Bool
   public let visualTokenBudget: Int32?
+  public let enableSpeculativeDecoding: Bool?
 
   /// - Parameters:
   ///   - systemMessage: The system message to be used in the conversation.
@@ -200,6 +201,11 @@ public struct ConversationConfig {
   ///   - automaticToolCalling: Whether to enable automatic tool calling. Default is true.
   ///   - enableResponseFormat: Whether to enable response format (constrained decoding). Default
   ///     is false.
+  ///   - visualTokenBudget: Visual token budget.
+  ///   - enableSpeculativeDecoding: Whether to enable speculative decoding for this conversation.
+  ///     If nil, inherits from engine settings. Note: Speculative decoding can only be enabled if
+  ///     the engine was initialized with speculative decoding enabled. An error will occur if this
+  ///     is set to true when the engine was not initialized for speculative decoding.
   public init(
     systemMessage: Message? = nil,
     initialMessages: [Message] = [],
@@ -211,7 +217,8 @@ public struct ConversationConfig {
     thinkingConfig: ThinkingConfig? = nil,
     automaticToolCalling: Bool = true,
     enableResponseFormat: Bool = false,
-    visualTokenBudget: Int32? = nil
+    visualTokenBudget: Int32? = nil,
+    enableSpeculativeDecoding: Bool? = nil
   ) {
     self.systemMessage = systemMessage.flatMap { msg in
       if msg.toString.isEmpty {
@@ -230,6 +237,7 @@ public struct ConversationConfig {
     self.automaticToolCalling = automaticToolCalling
     self.enableResponseFormat = enableResponseFormat
     self.visualTokenBudget = visualTokenBudget
+    self.enableSpeculativeDecoding = enableSpeculativeDecoding
   }
 }
 

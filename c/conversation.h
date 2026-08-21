@@ -146,6 +146,19 @@ LITERT_LM_C_API_EXPORT
 void litert_lm_conversation_config_set_enable_constrained_decoding(
     LiteRtLmConversationConfig* config, bool enable_constrained_decoding);
 
+// Sets whether to enable speculative decoding for this conversation config.
+// @param config The config to modify.
+// @param enable_speculative_decoding Whether to enable speculative decoding.
+// Note: Speculative decoding can only be enabled if the engine was initialized
+// with speculative decoding enabled. An error will occur during conversation
+// creation if this is set to true when the engine was not initialized for
+// speculative decoding.
+//
+// Added in version 0.1.0.
+LITERT_LM_C_API_EXPORT
+void litert_lm_conversation_config_set_enable_speculative_decoding(
+    LiteRtLmConversationConfig* config, bool enable_speculative_decoding);
+
 // Sets the constraint provider type for this conversation config.
 // @param config The config to modify.
 // @param provider_type The constraint provider type to use, or NULL to unset.

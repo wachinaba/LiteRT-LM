@@ -448,6 +448,7 @@ class AbstractEngine(abc.ABC):
       lora_config: LoraConfig | None = None,
       max_output_tokens: int | None = None,
       chat_template: str | None = None,
+      enable_speculative_decoding: bool | None = None,
   ) -> AbstractConversation:
     """Creates a new conversation for this engine.
 
@@ -475,6 +476,11 @@ class AbstractEngine(abc.ABC):
           not set, use the default provided by the model or the engine.
         enable_response_format: Whether to enable response format (constrained
           decoding). If True, initializes the constraint provider LLGuidance.
+        enable_speculative_decoding: Whether to enable speculative decoding for
+          this conversation. If None, inherits from engine settings. Note:
+          Speculative decoding can only be enabled if the engine was initialized
+          with speculative decoding enabled. An error will occur if this is set
+          to True when the engine was not initialized for speculative decoding.
     """
 
   @abc.abstractmethod
@@ -484,6 +490,7 @@ class AbstractEngine(abc.ABC):
       apply_prompt_template: bool = True,
       sampler_config: SamplerConfig | None = None,
       lora_config: LoraConfig | None = None,
+      enable_speculative_decoding: bool | None = None,
   ) -> AbstractSession:
     """Creates a new session for this engine.
 
@@ -493,6 +500,11 @@ class AbstractEngine(abc.ABC):
         sampler_config: Configuration for the sampling process. If None, then
           uses the engine's default values.
         lora_config: Configuration for LoRA adapters.
+        enable_speculative_decoding: Whether to enable speculative decoding for
+          this session. If None, inherits from engine settings. Note:
+          Speculative decoding can only be enabled if the engine was initialized
+          with speculative decoding enabled. An error will occur if this is set
+          to True when the engine was not initialized for speculative decoding.
 
     Returns:
         A new session instance for low-level interaction with the model.

@@ -68,6 +68,11 @@ class ConversationConfig {
   // Returns the SessionConfig used for creating the ConversationConfig.
   const SessionConfig& GetSessionConfig() const { return session_config_; }
 
+  // Returns whether speculative decoding is enabled for the conversation.
+  std::optional<bool> GetEnableSpeculativeDecoding() const {
+    return session_config_.GetEnableSpeculativeDecoding();
+  }
+
   // Returns the Preface used for creating the ConversationConfig.
   const Preface& GetPreface() const { return preface_; }
 
@@ -243,6 +248,17 @@ class ConversationConfig {
     // Sets whether to enable rewinding.
     Builder& SetEnableRewinding(bool enable_rewinding) {
       enable_rewinding_ = enable_rewinding;
+      return *this;
+    }
+
+    // Sets whether to enable speculative decoding for the conversation.
+    // If not set, the conversation inherits the engine setting.
+    // Note: Speculative decoding can only be enabled for a conversation if the
+    // engine was initialized with speculative decoding enabled. An error will
+    // occur if this is set to true when the engine was not initialized for
+    // speculative decoding.
+    Builder& SetEnableSpeculativeDecoding(bool enable_speculative_decoding) {
+      session_config_.SetEnableSpeculativeDecoding(enable_speculative_decoding);
       return *this;
     }
 

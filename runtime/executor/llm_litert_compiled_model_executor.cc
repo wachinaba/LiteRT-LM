@@ -1045,8 +1045,11 @@ absl::StatusOr<std::vector<std::vector<int>>>
 LlmLiteRtCompiledModelExecutorBase::Decode(
     const ExecutorDecodeParams& decode_params) {
 
+  bool enable_mtp_drafter =
+      mtp_drafter_ != nullptr &&
+      decode_params.GetEnableSpeculativeDecoding().value_or(true);
   std::vector<std::vector<int>> output_tokens_vector;
-  if (mtp_drafter_ == nullptr) {
+  if (!enable_mtp_drafter) {
     ABSL_ASSIGN_OR_RETURN(auto decoded_logits,
                           DecodeLogits(ExecutorInputs(), decode_params));
     std::optional<TensorBuffer> output_tokens;

@@ -802,8 +802,9 @@ LlmLiteRtNpuCompiledModelExecutor::Decode(
   }
 
   // Early return for standard non-speculative decode or when constrained
-  // decoding is requested.
+  // decoding is requested or speculative decoding is disabled in decode params.
   if (speculative_decoding_type_ != SpeculativeDecodingType::kMTP ||
+      !decode_params.GetEnableSpeculativeDecoding().value_or(true) ||
       decode_params.GetConstrainedDecoder() != nullptr) {
     return DecodeNonSpeculative(decode_params, start);
   }

@@ -282,6 +282,21 @@ class SessionConfig {
     max_output_tokens_ = max_output_tokens;
   }
 
+  // Speculative decoding:
+  // Getters and setters for speculative decoding enablement.
+  // If not set, it returns std::nullopt (which means it inherits the engine
+  // setting upon validation).
+  // Note: Speculative decoding can only be enabled for a session if the engine
+  // was initialized with speculative decoding enabled. An error will occur if
+  // this is set to true when the engine was not initialized for speculative
+  // decoding.
+  std::optional<bool> GetEnableSpeculativeDecoding() const {
+    return enable_speculative_decoding_;
+  }
+  void SetEnableSpeculativeDecoding(bool enable_speculative_decoding) {
+    enable_speculative_decoding_ = enable_speculative_decoding;
+  }
+
   using AudioEmbeddingsCallback =
       absl::AnyInvocable<void(const ExecutorAudioData&) const>;
   const AudioEmbeddingsCallback* GetAudioEmbeddingsCallback() const {
@@ -354,6 +369,10 @@ class SessionConfig {
   // tokens (input + output) stored in the KV cache over the lifetime of a
   // session.
   int max_output_tokens_ = std::numeric_limits<int>::max();
+
+  // Whether to enable speculative decoding for the session.
+  // If nullopt, the session inherits the engine's speculative decoding setting.
+  std::optional<bool> enable_speculative_decoding_;
 
   // Optional callback to receive audio embeddings. If not set, it will be
   // nullptr.
