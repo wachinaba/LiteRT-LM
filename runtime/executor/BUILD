@@ -27,8 +27,8 @@ licenses(["notice"])
 
 cc_library(
     name = "audio_executor_settings",
-    srcs = ["audio_executor_settings.cc"],
-    hdrs = ["audio_executor_settings.h"],
+    srcs = ["audio/audio_executor_settings.cc"],
+    hdrs = ["audio/audio_executor_settings.h"],
     deps = [
         ":executor_settings_base",
         "@com_google_absl//absl/status",
@@ -43,7 +43,7 @@ cc_library(
 
 cc_test(
     name = "audio_executor_settings_test",
-    srcs = ["audio_executor_settings_test.cc"],
+    srcs = ["audio/audio_executor_settings_test.cc"],
     deps = [
         ":audio_executor_settings",
         ":executor_settings_base",
@@ -56,8 +56,8 @@ cc_test(
 
 cc_library(
     name = "vision_executor_settings",
-    srcs = ["vision_executor_settings.cc"],
-    hdrs = ["vision_executor_settings.h"],
+    srcs = ["vision/vision_executor_settings.cc"],
+    hdrs = ["vision/vision_executor_settings.h"],
     deps = [
         ":executor_settings_base",
         "@com_google_absl//absl/status",
@@ -71,7 +71,7 @@ cc_library(
 
 cc_test(
     name = "vision_executor_settings_test",
-    srcs = ["vision_executor_settings_test.cc"],
+    srcs = ["vision/vision_executor_settings_test.cc"],
     deps = [
         ":executor_settings_base",
         ":vision_executor_settings",
@@ -726,13 +726,13 @@ cc_test(
 
 cc_library(
     name = "vision_executor",
-    hdrs = ["vision_executor.h"],
+    hdrs = ["vision/vision_executor.h"],
     deps = [":vision_executor_base"],
 )
 
 cc_library(
     name = "vision_executor_base",
-    hdrs = ["vision_executor_base.h"],
+    hdrs = ["vision/vision_executor_base.h"],
     deps = [
         ":llm_executor_io_types",
         "@com_google_absl//absl/container:flat_hash_map",
@@ -817,13 +817,13 @@ cc_test(
 
 cc_library(
     name = "audio_executor",
-    hdrs = ["audio_executor.h"],
+    hdrs = ["audio/audio_executor.h"],
     deps = [":audio_executor_base"],
 )
 
 cc_library(
     name = "audio_executor_base",
-    hdrs = ["audio_executor_base.h"],
+    hdrs = ["audio/audio_executor_base.h"],
     deps = [
         ":executor_settings_base",
         ":llm_executor_io_types",
@@ -835,8 +835,8 @@ cc_library(
 
 cc_library(
     name = "embedding_executor_settings",
-    srcs = ["embedding_executor_settings.cc"],
-    hdrs = ["embedding_executor_settings.h"],
+    srcs = ["embedding/embedding_executor_settings.cc"],
+    hdrs = ["embedding/embedding_executor_settings.h"],
     deps = [
         ":executor_settings_base",
         "@com_google_absl//absl/status:status_macros",
@@ -849,7 +849,7 @@ cc_library(
 
 cc_test(
     name = "embedding_executor_settings_test",
-    srcs = ["embedding_executor_settings_test.cc"],
+    srcs = ["embedding/embedding_executor_settings_test.cc"],
     deps = [
         ":embedding_executor_settings",
         ":executor_settings_base",
@@ -862,7 +862,7 @@ cc_test(
 
 cc_library(
     name = "embedding_executor_base",
-    hdrs = ["embedding_executor_base.h"],
+    hdrs = ["embedding/embedding_executor_base.h"],
     deps = [
         ":llm_executor_io_types",
         "@com_google_absl//absl/status",
@@ -1017,8 +1017,8 @@ cc_test(
 
 cc_library(
     name = "audio_executor_utils",
-    srcs = ["audio_executor_utils.cc"],
-    hdrs = ["audio_executor_utils.h"],
+    srcs = ["audio/audio_executor_utils.cc"],
+    hdrs = ["audio/audio_executor_utils.h"],
     deps = [
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:status_macros",
@@ -1035,7 +1035,7 @@ cc_library(
 
 cc_test(
     name = "audio_executor_utils_test",
-    srcs = ["audio_executor_utils_test.cc"],
+    srcs = ["audio/audio_executor_utils_test.cc"],
     data = ["//runtime/testdata"],
     deps = [
         ":audio_executor_utils",
@@ -1054,8 +1054,8 @@ cc_test(
 
 cc_library(
     name = "vision_executor_utils",
-    srcs = ["vision_executor_utils.cc"],
-    hdrs = ["vision_executor_utils.h"],
+    srcs = ["vision/vision_executor_utils.cc"],
+    hdrs = ["vision/vision_executor_utils.h"],
     deps = [
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:status_macros",
@@ -1073,7 +1073,7 @@ cc_library(
 
 cc_test(
     name = "vision_executor_utils_test",
-    srcs = ["vision_executor_utils_test.cc"],
+    srcs = ["vision/vision_executor_utils_test.cc"],
     data = ["//runtime/testdata"],
     deps = [
         ":executor_settings_base",
