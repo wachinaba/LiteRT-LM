@@ -1531,6 +1531,12 @@ JNI_METHOD(nativeHasSpeculativeDecodingSupport)(JNIEnv* env, jclass thiz,
       reinterpret_cast<LiteRtLmLoadedFile*>(capabilities_pointer));
 }
 
+LITERTLM_JNIEXPORT jint JNICALL JNI_METHOD(nativeGetMaxContextTokens)(
+    JNIEnv* env, jclass thiz, jlong capabilities_pointer) {
+  return litert_lm_loaded_file_get_max_context_tokens(
+      reinterpret_cast<LiteRtLmLoadedFile*>(capabilities_pointer));
+}
+
 LITERTLM_JNIEXPORT jlong JNICALL JNI_METHOD(nativeCreateEmbeddingEngine)(
     JNIEnv* env, jclass thiz, jint model_fd, jstring model_path,
     jstring backend, jstring vision_backend, jstring audio_backend,

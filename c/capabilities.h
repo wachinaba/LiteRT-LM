@@ -16,6 +16,7 @@
 #define THIRD_PARTY_ODML_LITERT_LM_C_CAPABILITIES_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #if defined(__APPLE__)
 #include "engine.h"  // NOLINT
@@ -50,6 +51,12 @@ void litert_lm_loaded_file_delete(LiteRtLmLoadedFile* loaded_file);
 // Added in version 0.2.0.
 LITERT_LM_C_API_EXPORT
 bool litert_lm_loaded_file_has_speculative_decoding_support(
+    LiteRtLmLoadedFile* loaded_file);
+
+// Returns the maximum supported context tokens for the loaded LiteRT-LM file.
+// Returns 0 if not found or on error.
+LITERT_LM_C_API_EXPORT
+uint32_t litert_lm_loaded_file_get_max_context_tokens(
     LiteRtLmLoadedFile* loaded_file);
 
 #ifdef __cplusplus

@@ -14,6 +14,7 @@
 
 #include "c/capabilities.h"
 
+#include <cstdint>
 #include <fstream>
 #include <ios>
 
@@ -51,6 +52,19 @@ bool litert_lm_loaded_file_has_speculative_decoding_support(
       loaded_file->stream);
   if (!result.ok()) {
     return false;
+  }
+  return *result;
+}
+
+uint32_t litert_lm_loaded_file_get_max_context_tokens(
+    LiteRtLmLoadedFile* loaded_file) {
+  if (loaded_file == nullptr) {
+    return 0;
+  }
+  auto result = litert::lm::schema::capabilities::GetMaxContextTokens(
+      loaded_file->stream);
+  if (!result.ok()) {
+    return 0;
   }
   return *result;
 }

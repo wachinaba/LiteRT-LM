@@ -15,6 +15,7 @@
 #include "c/capabilities.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -35,6 +36,20 @@ TEST(CapabilitiesCTest, HasSpeculativeDecodingSupport) {
   LiteRtLmLoadedFile* file = litert_lm_loaded_file_create(model_path.c_str());
   ASSERT_NE(file, nullptr);
   EXPECT_FALSE(litert_lm_loaded_file_has_speculative_decoding_support(file));
+  litert_lm_loaded_file_delete(file);
+}
+
+TEST(CapabilitiesCTest, GetMaxContextTokens) {
+  std::string model_path = GetRunfilePath(
+      "litert_lm/runtime/testdata/test_lm.litertlm");
+  LiteRtLmLoadedFile* file = litert_lm_loaded_file_create(model_path.c_str());
+  ASSERT_NE(file, nullptr);
+  // Smoke test to ensure it doesn't crash.
+  uint32_t max_context_tokens =
+      litert_lm_loaded_file_get_max_context_tokens(file);
+  // We expect 0 if not present, or some value if present.
+  // Just print it or verify it's a valid uint32_t.
+  (void)max_context_tokens;
   litert_lm_loaded_file_delete(file);
 }
 

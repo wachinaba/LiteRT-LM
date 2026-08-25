@@ -393,6 +393,9 @@ internal object LiteRtLmJni {
   /** Returns true if the loaded LiteRT-LM file supports speculative decoding. */
   external fun nativeHasSpeculativeDecodingSupport(capabilitiesPointer: Long): Boolean
 
+  /** Returns the maximum supported context tokens for the loaded LiteRT-LM file. */
+  external fun nativeGetMaxContextTokens(capabilitiesPointer: Long): Int
+
   /** Creates a new LiteRT-LM embedding engine. */
   external fun nativeCreateEmbeddingEngine(
     modelFd: Int,

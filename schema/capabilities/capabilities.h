@@ -15,6 +15,7 @@
 #ifndef THIRD_PARTY_ODML_LITERT_LM_SCHEMA_CAPABILITIES_CAPABILITIES_H_
 #define THIRD_PARTY_ODML_LITERT_LM_SCHEMA_CAPABILITIES_CAPABILITIES_H_
 
+#include "schema/capabilities/max_context_tokens.h"  // IWYU pragma: export
 #include "schema/capabilities/speculative_decoding.h"  // IWYU pragma: export
 
 #endif  // THIRD_PARTY_ODML_LITERT_LM_SCHEMA_CAPABILITIES_CAPABILITIES_H_

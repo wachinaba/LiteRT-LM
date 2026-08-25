@@ -33,6 +33,11 @@ public class Capabilities {
     return litert_lm_loaded_file_has_speculative_decoding_support(handle)
   }
 
+  /// Returns the maximum supported context tokens for the loaded LiteRT-LM file.
+  public func getMaxContextTokens() -> UInt32 {
+    return litert_lm_loaded_file_get_max_context_tokens(handle)
+  }
+
   deinit {
     if let handle = handle {
       litert_lm_loaded_file_delete(handle)

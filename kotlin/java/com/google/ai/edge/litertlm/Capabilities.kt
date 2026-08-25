@@ -46,6 +46,14 @@ class Capabilities(modelPath: String) : AutoCloseable {
     }
   }
 
+  /** Gets the maximum supported context tokens for the loaded LiteRT-LM file. */
+  fun getMaxContextTokens(): Int {
+    synchronized(lock) {
+      checkInitialized()
+      return LiteRtLmJni.nativeGetMaxContextTokens(handle!!)
+    }
+  }
+
   /** Closes the loaded capabilities and releases underlying resources. */
   override fun close() {
     synchronized(lock) {

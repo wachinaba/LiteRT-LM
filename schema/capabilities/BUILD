@@ -27,7 +27,26 @@ licenses(["notice"])
 cc_library(
     name = "capabilities",
     hdrs = ["capabilities.h"],
-    deps = [":speculative_decoding"],
+    deps = [
+        ":max_context_tokens",
+        ":speculative_decoding",
+    ],
+)
+
+cc_library(
+    name = "max_context_tokens",
+    srcs = ["max_context_tokens.cc"],
+    hdrs = ["max_context_tokens.h"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:status_macros",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings:str_format",
+        "//runtime/proto:llm_metadata_cc_proto",
+        "//runtime/util:litert_status_util",
+        "//schema/core:litertlm_header_schema",
+        "//schema/core:litertlm_read",
+    ],
 )
 
 cc_library(
@@ -42,6 +61,21 @@ cc_library(
         "//runtime/util:litert_status_util",
         "//schema/core:litertlm_header_schema",
         "//schema/core:litertlm_read",
+    ],
+)
+
+cc_test(
+    name = "max_context_tokens_test",
+    srcs = ["max_context_tokens_test.cc"],
+    deps = [
+        ":max_context_tokens",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:status_matchers",
+        "@flatbuffers//:runtime_cc",
+        "//runtime/proto:llm_metadata_cc_proto",
+        "//schema/core:litertlm_header",
+        "//schema/core:litertlm_header_schema",
     ],
 )
 
