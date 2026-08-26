@@ -56,12 +56,21 @@ public struct EmbeddingOptions: Hashable, Sendable {
   /// Whether to automatically insert special tokens (BOS, EOS, start/end of image, start/end of audio). If `nil`, uses the C++ engine default.
   public let insertSpecialTokens: Bool?
 
+  /// The number of vision soft tokens to generate per image. If `nil`, uses the C++ engine default.
+  public let visionTokensPerImage: Int?
+
   /// - Parameters:
   ///   - normalize: Whether to L2-normalize the output embedding vector. If `nil`, uses the C++ engine default.
   ///   - insertSpecialTokens: Whether to automatically insert special tokens. If `nil`, uses the C++ engine default.
-  public init(normalize: Bool? = nil, insertSpecialTokens: Bool? = nil) {
+  ///   - visionTokensPerImage: The number of vision soft tokens to generate per image. If `nil`, uses the C++ engine default.
+  public init(
+    normalize: Bool? = nil,
+    insertSpecialTokens: Bool? = nil,
+    visionTokensPerImage: Int? = nil
+  ) {
     self.normalize = normalize
     self.insertSpecialTokens = insertSpecialTokens
+    self.visionTokensPerImage = visionTokensPerImage
   }
 }
 

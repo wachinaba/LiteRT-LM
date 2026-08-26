@@ -135,6 +135,11 @@ public actor EmbeddingEngine {
         optionsHandle, insertSpecialTokens
       )
     }
+    if let visionTokensPerImage = options.visionTokensPerImage {
+      litert_lm_embedding_options_set_vision_tokens_per_image(
+        optionsHandle, Int32(visionTokensPerImage)
+      )
+    }
 
     let responseHandle = inputPointers.withUnsafeBufferPointer { buffer in
       litert_lm_embedding_engine_compute_embedding(
@@ -217,6 +222,11 @@ public actor EmbeddingEngine {
     if let insertSpecialTokens = options.insertSpecialTokens {
       litert_lm_embedding_options_set_insert_special_tokens(
         optionsHandle, insertSpecialTokens
+      )
+    }
+    if let visionTokensPerImage = options.visionTokensPerImage {
+      litert_lm_embedding_options_set_vision_tokens_per_image(
+        optionsHandle, Int32(visionTokensPerImage)
       )
     }
 

@@ -46,11 +46,13 @@ class EmbeddingEngineTest(parameterized.TestCase):
     self.assertIsNone(opts_default.normalize)
     self.assertIsNone(opts_default.insert_special_tokens)
     self.assertIsNone(opts_default.input_overflow_strategy)
+    self.assertIsNone(opts_default.vision_tokens_per_image)
 
     opts_custom = litert_lm.EmbeddingOptions(
         normalize=False,
         insert_special_tokens=True,
         input_overflow_strategy=litert_lm.InputOverflowStrategy.TRUNCATE,
+        vision_tokens_per_image=70,
     )
     self.assertFalse(opts_custom.normalize)
     self.assertTrue(opts_custom.insert_special_tokens)
@@ -58,6 +60,7 @@ class EmbeddingEngineTest(parameterized.TestCase):
         opts_custom.input_overflow_strategy,
         litert_lm.InputOverflowStrategy.TRUNCATE,
     )
+    self.assertEqual(opts_custom.vision_tokens_per_image, 70)
 
   def test_compute_embedding_single(self):
     engine = litert_lm.EmbeddingEngine(

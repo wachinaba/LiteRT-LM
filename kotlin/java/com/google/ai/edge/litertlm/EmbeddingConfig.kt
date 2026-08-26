@@ -51,10 +51,16 @@ constructor(
  *   engine default.
  * @property insertSpecialTokens Whether to automatically insert special tokens (BOS, EOS, start/end
  *   of image, start/end of audio). If `null`, uses the C++ engine default.
+ * @property visionTokensPerImage The number of vision soft tokens to generate per image. If `null`,
+ *   uses the C++ engine default.
  */
 data class EmbeddingOptions
 @JvmOverloads
-constructor(val normalize: Boolean? = null, val insertSpecialTokens: Boolean? = null)
+constructor(
+  val normalize: Boolean? = null,
+  val insertSpecialTokens: Boolean? = null,
+  val visionTokensPerImage: Int? = null,
+)
 
 /**
  * Represents the embedding result for an input item.

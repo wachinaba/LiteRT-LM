@@ -35,10 +35,16 @@ class EmbeddingEngineTests: XCTestCase {
     let options = EmbeddingOptions()
     XCTAssertNil(options.normalize)
     XCTAssertNil(options.insertSpecialTokens)
+    XCTAssertNil(options.visionTokensPerImage)
 
-    let customOptions = EmbeddingOptions(normalize: false, insertSpecialTokens: true)
+    let customOptions = EmbeddingOptions(
+      normalize: false,
+      insertSpecialTokens: true,
+      visionTokensPerImage: 70
+    )
     XCTAssertEqual(customOptions.normalize, false)
     XCTAssertEqual(customOptions.insertSpecialTokens, true)
+    XCTAssertEqual(customOptions.visionTokensPerImage, 70)
   }
 
   func testEmbeddingEngineConfig_IsCorrectlySet() async throws {

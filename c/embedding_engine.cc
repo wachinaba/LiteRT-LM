@@ -270,6 +270,33 @@ litert_lm_embedding_options_get_input_overflow_strategy(
       options->options.input_overflow_strategy);
 }
 
+void litert_lm_embedding_options_set_vision_tokens_per_image(
+    LiteRtLmEmbeddingOptions* options, int vision_tokens_per_image) {
+  if (options) {
+    if (vision_tokens_per_image > 0) {
+      options->options.vision_tokens_per_image = vision_tokens_per_image;
+    } else {
+      options->options.vision_tokens_per_image = std::nullopt;
+    }
+  }
+}
+
+int litert_lm_embedding_options_get_vision_tokens_per_image(
+    const LiteRtLmEmbeddingOptions* options) {
+  if (!options || !options->options.vision_tokens_per_image.has_value()) {
+    return 0;
+  }
+  return *options->options.vision_tokens_per_image;
+}
+
+bool litert_lm_embedding_options_has_vision_tokens_per_image(
+    const LiteRtLmEmbeddingOptions* options) {
+  if (!options) {
+    return false;
+  }
+  return options->options.vision_tokens_per_image.has_value();
+}
+
 void litert_lm_embedding_response_delete(LiteRtLmEmbeddingResponse* response) {
   delete response;
 }

@@ -723,6 +723,22 @@ def _setup_lib_signatures(lib):
   lib.litert_lm_embedding_options_get_input_overflow_strategy.argtypes = [
       ctypes.c_void_p
   ]
+  lib.litert_lm_embedding_options_set_vision_tokens_per_image.argtypes = [
+      ctypes.c_void_p,
+      ctypes.c_int,
+  ]
+  lib.litert_lm_embedding_options_get_vision_tokens_per_image.restype = (
+      ctypes.c_int
+  )
+  lib.litert_lm_embedding_options_get_vision_tokens_per_image.argtypes = [
+      ctypes.c_void_p
+  ]
+  lib.litert_lm_embedding_options_has_vision_tokens_per_image.restype = (
+      ctypes.c_bool
+  )
+  lib.litert_lm_embedding_options_has_vision_tokens_per_image.argtypes = [
+      ctypes.c_void_p
+  ]
 
   # Embedding Response
   lib.litert_lm_embedding_response_delete.argtypes = [ctypes.c_void_p]
