@@ -2,6 +2,11 @@ name: Build prefix-cache Android AAR
 
 on:
   workflow_dispatch:
+    inputs:
+      reuse_aar_run_id:
+        description: "Optional successful run ID whose JNI libraries should be reused"
+        required: false
+        type: string
 
 jobs:
   build:
@@ -12,6 +17,7 @@ jobs:
       ANDROID_HOME: /opt/android-sdk
       ANDROID_SDK_ROOT: /opt/android-sdk
       ANDROID_NDK_HOME: /opt/android-ndk
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,23 +46,58 @@ jobs:
             "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;28.1.13356709"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.1.13356709" >> "$GITHUB_ENV"
 
-      - name: Build patched Kotlin and JNI libraries
+      - name: Test checkpoint implementation
+        if: inputs.reuse_aar_run_id == ''
         run: |
           set -euo pipefail
           bazelisk test --test_output=errors \
             //runtime/conversation:conversation_test
 
+      - name: Build and verify patched Kotlin classes
+        run: |
+          set -euo pipefail
           target_kotlin=//kotlin/java/com/google/ai/edge/litertlm:litertlm-android
+          common=(--deleted_packages=swift)
+          bazelisk build --config=android_arm64 "${common[@]}" "$target_kotlin"
+
+          mapfile -t kotlin_candidates < <(
+            {
+              bazelisk cquery --config=android_arm64 "${common[@]}" \
+                --output=files "$target_kotlin" || true
+              find bazel-bin/kotlin/java/com/google/ai/edge/litertlm \
+                -type f -name '*.jar'
+            } | sort -u
+          )
+          kotlin_jar=""
+          for candidate in "${kotlin_candidates[@]}"; do
+            if unzip -Z1 "$candidate" | grep -qE '(^|/)Conversation\.class$'; then
+              kotlin_jar="$candidate"
+              break
+            fi
+          done
+          if [[ -z "$kotlin_jar" ]]; then
+            printf 'No Kotlin classes JAR found. Candidates:\n%s\n' \
+              "${kotlin_candidates[*]}" >&2
+            exit 1
+          fi
+          conversation_class=$(unzip -Z1 "$kotlin_jar" | \
+            grep -E '(^|/)Conversation\.class$' | head -n1)
+          unzip -p "$kotlin_jar" "$conversation_class" | strings | \
+            grep -qx 'resetToPreface'
+          cp "$kotlin_jar" /tmp/litertlm-android.jar
+          echo "Using Kotlin classes JAR: $kotlin_jar"
+
+      - name: Build patched JNI libraries
+        if: inputs.reuse_aar_run_id == ''
+        run: |
+          set -euo pipefail
           target_jni=//kotlin/java/com/google/ai/edge/litertlm/jni:litertlm_jni
           common=(--deleted_packages=swift)
 
-          bazelisk build --config=android_arm64 "${common[@]}" "$target_kotlin" "$target_jni"
+          bazelisk build --config=android_arm64 "${common[@]}" "$target_jni"
           mkdir -p /tmp/prefix-aar/jni/arm64-v8a
-          kotlin_jar=$(bazelisk cquery --config=android_arm64 "${common[@]}" \
-            --output=files "$target_kotlin" | grep -E '\.jar$' | head -n1)
           arm64_so=$(bazelisk cquery --config=android_arm64 "${common[@]}" \
             --output=files "$target_jni" | grep -E 'liblitertlm_jni\.so$' | head -n1)
-          cp "$kotlin_jar" /tmp/litertlm-android.jar
           cp "$arm64_so" /tmp/prefix-aar/jni/arm64-v8a/liblitertlm_jni.so
 
           bazelisk build --config=android_x86_64 "${common[@]}" "$target_jni"
@@ -66,14 +107,29 @@ jobs:
           cp "$x64_so" /tmp/prefix-aar/jni/x86_64/liblitertlm_jni.so
 
       - name: Assemble AAR
+        env:
+          REUSE_AAR_RUN_ID: ${{ inputs.reuse_aar_run_id }}
         run: |
           set -euo pipefail
-          curl -fsSL -o /tmp/base.aar \
-            https://dl.google.com/dl/android/maven2/com/google/ai/edge/litertlm/litertlm-android/0.16.1/litertlm-android-0.16.1.aar
+          if [[ -n "$REUSE_AAR_RUN_ID" ]]; then
+            mkdir -p /tmp/reused-aar
+            gh run download "$REUSE_AAR_RUN_ID" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name litertlm-android-prefix-cache \
+              --dir /tmp/reused-aar
+            cp /tmp/reused-aar/litertlm-android-prefix-cache.aar /tmp/base.aar
+          else
+            curl -fsSL -o /tmp/base.aar \
+              https://dl.google.com/dl/android/maven2/com/google/ai/edge/litertlm/litertlm-android/0.16.1/litertlm-android-0.16.1.aar
+          fi
           mkdir -p /tmp/base-aar
           unzip -q /tmp/base.aar -d /tmp/base-aar
           cp /tmp/litertlm-android.jar /tmp/base-aar/classes.jar
-          cp -R /tmp/prefix-aar/jni/. /tmp/base-aar/jni/
+          if [[ -z "$REUSE_AAR_RUN_ID" ]]; then
+            cp -R /tmp/prefix-aar/jni/. /tmp/base-aar/jni/
+          fi
+          unzip -Z1 /tmp/base-aar/classes.jar | \
+            grep -qE '(^|/)Conversation\.class$'
           mkdir -p dist
           (cd /tmp/base-aar && zip -qr "$GITHUB_WORKSPACE/dist/litertlm-android-prefix-cache.aar" .)
 
