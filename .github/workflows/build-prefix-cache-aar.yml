@@ -139,3 +139,30 @@ jobs:
           name: litertlm-android-prefix-cache
           path: dist/litertlm-android-prefix-cache.aar
           if-no-files-found: error
+
+      - name: Check out Flutter plugin
+        uses: actions/checkout@v4
+        with:
+          repository: wachinaba/litertlm
+          ref: prefix-cache-checkpoint
+          path: flutter-plugin
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Compile Flutter example against patched AAR
+        run: |
+          set -euo pipefail
+          mkdir -p flutter-plugin/android/libs
+          cp dist/litertlm-android-prefix-cache.aar \
+            flutter-plugin/android/libs/litertlm-android-prefix-cache.aar
+          cd flutter-plugin
+          flutter pub get
+          mkdir -p example/assets/audio example/assets/images example/assets/models
+          flutter create --platforms=android \
+            --project-name=litertlm_example \
+            --org=org.rockstudio example
+          cd example
+          flutter build apk --debug
