@@ -64,7 +64,7 @@ jobs:
             {
               bazelisk cquery --config=android_arm64 "${common[@]}" \
                 --output=files "$target_kotlin" || true
-              find bazel-bin/kotlin/java/com/google/ai/edge/litertlm \
+              find -L bazel-bin/kotlin/java/com/google/ai/edge/litertlm \
                 -type f -name '*.jar'
             } | sort -u
           )
