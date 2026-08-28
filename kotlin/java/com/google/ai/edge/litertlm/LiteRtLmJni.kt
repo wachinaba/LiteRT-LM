@@ -332,6 +332,9 @@ internal object LiteRtLmJni {
    */
   external fun nativeConversationGetTokenCount(conversationPointer: Long): Int
 
+  /** Restores the conversation to its saved, prefilled preface checkpoint. */
+  external fun nativeConversationResetToPreface(conversationPointer: Long)
+
   /**
    * Renders the message into a string for testing purposes.
    *

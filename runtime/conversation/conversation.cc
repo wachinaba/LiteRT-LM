@@ -72,6 +72,7 @@ constexpr absl::string_view kChannelContentCheckpoint =
     "channel_content_checkpoint";
 constexpr absl::string_view kStartContentCheckpoint =
     "start_content_checkpoint";
+constexpr absl::string_view kPrefaceCheckpoint = "preface_checkpoint";
 
 bool IsEmptyInputError(const absl::Status& status) {
   return absl::IsInvalidArgument(status) &&
@@ -491,6 +492,18 @@ absl::StatusOr<std::unique_ptr<Conversation>> Conversation::Create(
     if (!session_inputs.empty()) {
       ABSL_RETURN_IF_ERROR(conversation->session_->RunPrefill(session_inputs));
     }
+
+    // Session implementations that support checkpointing can restore this
+    // exact prefix without evaluating the system prompt again. Keep creation
+    // compatible with implementations that do not support checkpoints; the
+    // explicit ResetToPreface call will report that capability as unavailable.
+    const absl::Status checkpoint_status =
+        conversation->session_->SaveCheckpoint(kPrefaceCheckpoint);
+    if (checkpoint_status.ok()) {
+      conversation->preface_checkpoint_available_ = true;
+    } else if (!absl::IsUnimplemented(checkpoint_status)) {
+      return checkpoint_status;
+    }
   }
 
   if (engine.GetEngineSettings().IsBenchmarkEnabled()) {
@@ -849,6 +862,51 @@ absl::Status Conversation::RunTextScoringAsync(
 
 absl::StatusOr<int> Conversation::GetTokenCount() const {
   return session_->GetCurrentStep();
+}
+
+absl::Status Conversation::ResetToPreface() {
+  if (!config_.prefill_preface_on_init() || IsEmptyPreface(preface_)) {
+    return absl::FailedPreconditionError(
+        "ResetToPreface requires a non-empty preface and "
+        "prefill_preface_on_init=true.");
+  }
+  if (!preface_checkpoint_available_) {
+    return absl::UnimplementedError(
+        "The active session backend does not support preface checkpoints.");
+  }
+
+  // Build fresh processor state before mutating the live conversation. Some
+  // processors retain incremental prompt/template parsing state that is not
+  // represented by the KV cache.
+  ABSL_ASSIGN_OR_RETURN(
+      std::unique_ptr<ModelDataProcessor> model_data_processor,
+      CreateModelDataProcessor(config_.GetProcessorConfig(), preface_,
+                               &engine_.GetTokenizer(),
+                               session_->GetSessionConfig().GetStopTokenIds(),
+                               config_.constrained_decoding_enabled(),
+                               prompt_template_.GetCapabilities()));
+  model_data_processor->SetReturnErrorOnParseFailure(
+      config_.return_error_on_parse_failure());
+
+  // Rewind restores the checkpoint's task-dependency state as well as the KV
+  // step, so a completed failed task must not prevent recovery.
+  session_->WaitUntilDone().IgnoreError();
+  ABSL_RETURN_IF_ERROR(session_->RewindToCheckpoint(kPrefaceCheckpoint));
+
+  model_data_processor_ = std::move(model_data_processor);
+  constraint_.reset();
+  is_appending_message_ = false;
+  checkpoint_message_index_ = std::nullopt;
+  channel_content_since_last_user_message_ = false;
+  {
+    absl::MutexLock lock(history_mutex_);
+    history_.clear();
+  }
+  {
+    absl::MutexLock lock(task_controllers_mutex_);
+    task_controllers_.clear();
+  }
+  return absl::OkStatus();
 }
 
 absl::StatusOr<BenchmarkInfo> Conversation::GetBenchmarkInfo() {

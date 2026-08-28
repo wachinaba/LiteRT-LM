@@ -618,6 +618,15 @@ class Conversation {
   // decode).
   absl::StatusOr<int> GetTokenCount() const;
 
+  // Restores the conversation to the state immediately after its preface was
+  // prefilled. This rewinds the underlying KV cache and clears all per-turn
+  // logical state, so the next message is processed as the first user turn.
+  //
+  // The conversation must have been created with
+  // `prefill_preface_on_init=true`, its preface must be non-empty, and no other
+  // operation may be started concurrently with this call.
+  absl::Status ResetToPreface();
+
   // Returns the benchmark info for the conversation. Under the hood, this
   // method triggers the benchmark info collection from the Session. Returns:
   // - The benchmark info for the conversation.
@@ -810,6 +819,9 @@ class Conversation {
 
   // Whether there is channel content present since the last user message.
   bool channel_content_since_last_user_message_ = false;
+
+  // True when `kPrefaceCheckpoint` was successfully saved during creation.
+  bool preface_checkpoint_available_ = false;
 };
 }  // namespace litert::lm
 

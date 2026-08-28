@@ -697,6 +697,20 @@ class Conversation(
   }
 
   /**
+   * Restores this conversation to the state immediately after its preface was prefilled.
+   *
+   * The KV cache for the fixed preface is retained, while message history and all per-turn
+   * processor state are cleared. The conversation must have been created with
+   * `prefillPrefaceOnInit = true`, and this method must not run concurrently with inference.
+   *
+   * @throws LiteRtLmJniException if checkpoint restore is unavailable or fails.
+   */
+  fun resetToPreface() {
+    checkIsAlive()
+    LiteRtLmJni.nativeConversationResetToPreface(handle)
+  }
+
+  /**
    * Renders the message into a string for testing and logging.
    *
    * This function does not need to be called for actual message sending, as the `SendMessage` and

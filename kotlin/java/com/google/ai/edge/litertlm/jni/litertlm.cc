@@ -1043,6 +1043,20 @@ LITERTLM_JNIEXPORT jint JNICALL JNI_METHOD(nativeConversationGetTokenCount)(
   return *tokens_count;
 }
 
+LITERTLM_JNIEXPORT void JNICALL
+JNI_METHOD(nativeConversationResetToPreface)(JNIEnv* env, jclass thiz,
+                                             jlong conversation_pointer) {
+  Conversation* conversation =
+      reinterpret_cast<Conversation*>(conversation_pointer);
+
+  auto status = conversation->ResetToPreface();
+  if (!status.ok()) {
+    ThrowLiteRtLmJniException(env,
+                             "Failed to reset conversation to preface: " +
+                                 status.ToString());
+  }
+}
+
 LITERTLM_JNIEXPORT jlong JNICALL JNI_METHOD(nativeCreateConversation)(
     JNIEnv* env, jclass thiz, jlong engine_pointer, jobject sampler_config_obj,
     jstring messages_json_string, jstring tools_description_json_string,

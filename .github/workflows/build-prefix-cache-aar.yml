@@ -1,0 +1,84 @@
+name: Build prefix-cache Android AAR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      ANDROID_HOME: /opt/android-sdk
+      ANDROID_SDK_ROOT: /opt/android-sdk
+      ANDROID_NDK_HOME: /opt/android-ndk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs unzip zip
+          npm install -g @bazel/bazelisk
+
+      - name: Install Android SDK
+        run: |
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl -fsSL -o /tmp/android-tools.zip \
+            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q /tmp/android-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;28.1.13356709"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.1.13356709" >> "$GITHUB_ENV"
+
+      - name: Build patched Kotlin and JNI libraries
+        run: |
+          set -euo pipefail
+          bazelisk test --test_output=errors \
+            //runtime/conversation:conversation_test
+
+          target_kotlin=//kotlin/java/com/google/ai/edge/litertlm:litertlm-android
+          target_jni=//kotlin/java/com/google/ai/edge/litertlm/jni:litertlm_jni
+          common=(--deleted_packages=swift)
+
+          bazelisk build --config=android_arm64 "${common[@]}" "$target_kotlin" "$target_jni"
+          mkdir -p /tmp/prefix-aar/jni/arm64-v8a
+          kotlin_jar=$(bazelisk cquery --config=android_arm64 "${common[@]}" \
+            --output=files "$target_kotlin" | grep -E '\.jar$' | head -n1)
+          arm64_so=$(bazelisk cquery --config=android_arm64 "${common[@]}" \
+            --output=files "$target_jni" | grep -E 'liblitertlm_jni\.so$' | head -n1)
+          cp "$kotlin_jar" /tmp/litertlm-android.jar
+          cp "$arm64_so" /tmp/prefix-aar/jni/arm64-v8a/liblitertlm_jni.so
+
+          bazelisk build --config=android_x86_64 "${common[@]}" "$target_jni"
+          mkdir -p /tmp/prefix-aar/jni/x86_64
+          x64_so=$(bazelisk cquery --config=android_x86_64 "${common[@]}" \
+            --output=files "$target_jni" | grep -E 'liblitertlm_jni\.so$' | head -n1)
+          cp "$x64_so" /tmp/prefix-aar/jni/x86_64/liblitertlm_jni.so
+
+      - name: Assemble AAR
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/base.aar \
+            https://dl.google.com/dl/android/maven2/com/google/ai/edge/litertlm/litertlm-android/0.16.1/litertlm-android-0.16.1.aar
+          mkdir -p /tmp/base-aar
+          unzip -q /tmp/base.aar -d /tmp/base-aar
+          cp /tmp/litertlm-android.jar /tmp/base-aar/classes.jar
+          cp -R /tmp/prefix-aar/jni/. /tmp/base-aar/jni/
+          mkdir -p dist
+          (cd /tmp/base-aar && zip -qr "$GITHUB_WORKSPACE/dist/litertlm-android-prefix-cache.aar" .)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: litertlm-android-prefix-cache
+          path: dist/litertlm-android-prefix-cache.aar
+          if-no-files-found: error

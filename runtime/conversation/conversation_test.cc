@@ -542,6 +542,18 @@ TEST_P(ConversationTest, GetTokenCountWithPreface) {
 
   ASSERT_OK_AND_ASSIGN(int tokens_after, conversation->GetTokenCount());
   EXPECT_EQ(tokens_after, 50);
+
+  if (prefill_preface_on_init_) {
+    EXPECT_OK(conversation->ResetToPreface());
+    ASSERT_OK_AND_ASSIGN(int tokens_after_reset,
+                         conversation->GetTokenCount());
+    EXPECT_EQ(tokens_after_reset, initial_tokens);
+    EXPECT_THAT(conversation->GetHistory(), testing::IsEmpty());
+  } else {
+    EXPECT_THAT(conversation->ResetToPreface(),
+                testing::status::StatusIs(
+                    absl::StatusCode::kFailedPrecondition));
+  }
 }
 
 TEST_P(ConversationTest, SendMessageGemma3Template) {
