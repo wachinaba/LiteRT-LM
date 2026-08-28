@@ -29,6 +29,17 @@ kt_jvm_library(
     ],
 )
 
+# Classes-only artifact used when packaging the Android AAR separately from JNI.
+kt_jvm_library(
+    name = "litertlm-jvm-classes",
+    srcs = glob(["*.kt"]),
+    deps = [
+        "@rules_kotlin//kotlin/compiler:kotlin-reflect",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
+    ],
+)
+
 # Note: To build with dynamic linking, use the following build flags:
 kt_android_library(
     name = "litertlm-android",

@@ -56,13 +56,13 @@ jobs:
       - name: Build and verify patched Kotlin classes
         run: |
           set -euo pipefail
-          target_kotlin=//kotlin/java/com/google/ai/edge/litertlm:litertlm-android
+          target_kotlin=//kotlin/java/com/google/ai/edge/litertlm:litertlm-jvm-classes
           common=(--deleted_packages=swift)
-          bazelisk build --config=android_arm64 "${common[@]}" "$target_kotlin"
+          bazelisk build "${common[@]}" "$target_kotlin"
 
           mapfile -t kotlin_candidates < <(
             {
-              bazelisk cquery --config=android_arm64 "${common[@]}" \
+              bazelisk cquery "${common[@]}" \
                 --output=files "$target_kotlin" || true
               find -L bazel-bin/kotlin/java/com/google/ai/edge/litertlm \
                 -type f -name '*.jar'
