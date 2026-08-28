@@ -70,7 +70,8 @@ jobs:
           )
           kotlin_jar=""
           for candidate in "${kotlin_candidates[@]}"; do
-            if unzip -Z1 "$candidate" | grep -qE '(^|/)Conversation\.class$'; then
+            if unzip -Z1 "$candidate" | \
+              grep -E '(^|/)Conversation\.class$' >/dev/null; then
               kotlin_jar="$candidate"
               break
             fi
@@ -81,9 +82,9 @@ jobs:
             exit 1
           fi
           conversation_class=$(unzip -Z1 "$kotlin_jar" | \
-            grep -E '(^|/)Conversation\.class$' | head -n1)
+            grep -E '(^|/)Conversation\.class$' | sed -n '1p')
           unzip -p "$kotlin_jar" "$conversation_class" | strings | \
-            grep -qx 'resetToPreface'
+            grep -x 'resetToPreface' >/dev/null
           cp "$kotlin_jar" /tmp/litertlm-android.jar
           echo "Using Kotlin classes JAR: $kotlin_jar"
 
@@ -129,7 +130,7 @@ jobs:
             cp -R /tmp/prefix-aar/jni/. /tmp/base-aar/jni/
           fi
           unzip -Z1 /tmp/base-aar/classes.jar | \
-            grep -qE '(^|/)Conversation\.class$'
+            grep -E '(^|/)Conversation\.class$' >/dev/null
           mkdir -p dist
           (cd /tmp/base-aar && zip -qr "$GITHUB_WORKSPACE/dist/litertlm-android-prefix-cache.aar" .)
 
