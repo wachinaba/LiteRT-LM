@@ -129,8 +129,45 @@ jobs:
           if [[ -z "$REUSE_AAR_RUN_ID" ]]; then
             cp -R /tmp/prefix-aar/jni/. /tmp/base-aar/jni/
           fi
+          # The source-built JNI library links the constrained-decoding
+          # provider dynamically. The stock Maven JNI library is self-contained,
+          # so this dependency is not present in the base AAR and must be added.
+          install -Dm755 \
+            prebuilt/android_arm64/libGemmaModelConstraintProvider.so \
+            /tmp/base-aar/jni/arm64-v8a/libGemmaModelConstraintProvider.so
+          install -Dm755 \
+            prebuilt/android_x86_64/libGemmaModelConstraintProvider.so \
+            /tmp/base-aar/jni/x86_64/libGemmaModelConstraintProvider.so
           unzip -Z1 /tmp/base-aar/classes.jar | \
             grep -E '(^|/)Conversation\.class$' >/dev/null
+          readelf="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf"
+          check_elf_alignment() {
+            local library="$1"
+            "$readelf" -lW "$library" | python3 -c '
+          import sys
+          library = sys.argv[1]
+          aligns = [
+              int(line.split()[-1], 16)
+              for line in sys.stdin
+              if line.lstrip().startswith("LOAD")
+          ]
+          if not aligns:
+              raise SystemExit(f"No ELF LOAD segments found: {library}")
+          if min(aligns) < 0x4000:
+              values = ", ".join(hex(value) for value in aligns)
+              raise SystemExit(f"ELF LOAD alignment below 16 KiB: {library}: {values}")
+          print(f"16 KiB ELF alignment verified: {library}")
+          ' "$library"
+          }
+          for abi in arm64-v8a x86_64; do
+            for library in \
+              liblitertlm_jni.so \
+              libGemmaModelConstraintProvider.so; do
+              path="/tmp/base-aar/jni/$abi/$library"
+              test -s "$path"
+              check_elf_alignment "$path"
+            done
+          done
           mkdir -p dist
           (cd /tmp/base-aar && zip -qr "$GITHUB_WORKSPACE/dist/litertlm-android-prefix-cache.aar" .)
 

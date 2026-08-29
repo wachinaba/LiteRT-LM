@@ -24,6 +24,13 @@ exports_files(["litertlm.cc"])
 cc_binary(
     name = "litertlm_jni",
     srcs = ["litertlm.cc"],
+    linkopts = select({
+        "@platforms//os:android": [
+            "-Wl,-z,common-page-size=16384",
+            "-Wl,-z,max-page-size=16384",
+        ],
+        "//conditions:default": [],
+    }),
     linkshared = 1,
     deps = [
         "@com_google_absl//absl/base:log_severity",
